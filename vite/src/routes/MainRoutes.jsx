@@ -12,6 +12,11 @@ const UtilsTypography = Loadable(lazy(() => import('views/utilities/Typography')
 const UtilsColor = Loadable(lazy(() => import('views/utilities/Color')));
 const UtilsShadow = Loadable(lazy(() => import('views/utilities/Shadow')));
 
+//importacion menu
+
+const PacientesInscripcion = Loadable(lazy(() => import('../views/pacientes/pacientes_formulario')));
+const PacientesLista = Loadable(lazy(() => import('../views/pacientes/pacientes_list'))); 
+
 // sample page routing
 const SamplePage = Loadable(lazy(() => import('views/sample-page')));
 
@@ -49,7 +54,16 @@ const MainRoutes = {
     {
       path: '/sample-page',
       element: <SamplePage />
+    },
+    {
+      path: '/pacientes_inscripcion',
+      element: <PacientesInscripcion />
+    },
+    {
+      path: '/pacientes_lista',
+      element: <PacientesLista />
     }
+
   ]
 };
 

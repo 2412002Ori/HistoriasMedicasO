@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import { memo } from 'react';
 
 // material-ui
@@ -101,7 +100,18 @@ function MenuCard() {
                 <TableChartOutlinedIcon fontSize="inherit" />
               </Avatar>
             </ListItemAvatar>
-           
+            <ListItemText
+              primary={
+                <Typography variant="h4" sx={{ color: 'primary.800', fontWeight: 600 }}>
+                  Menu Card
+                </Typography>
+              }
+              secondary={
+                <Typography variant="subtitle1" sx={{ color: 'primary.700' }}>
+                  This is a sample menu card with progress.
+                </Typography>
+              }
+            />
           </ListItem>
         </List>
         <LinearProgressWithLabel value={80} />
