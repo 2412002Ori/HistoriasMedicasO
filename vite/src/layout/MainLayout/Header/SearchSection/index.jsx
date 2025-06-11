@@ -105,11 +105,6 @@ export default function SearchSection() {
         <PopupState variant="popper" popupId="demo-popup-popper">
           {(popupState) => (
             <>
-              <Box sx={{ ml: 2 }}>
-                <HeaderAvatar {...bindToggle(popupState)}>
-                  <IconSearch stroke={1.5} size="19.2px" />
-                </HeaderAvatar>
-              </Box>
               <Popper
                 {...bindPopper(popupState)}
                 transition
@@ -144,13 +139,6 @@ export default function SearchSection() {
           startAdornment={
             <InputAdornment position="start">
               <IconSearch stroke={1.5} size="16px" />
-            </InputAdornment>
-          }
-          endAdornment={
-            <InputAdornment position="end">
-              <HeaderAvatar>
-                <IconAdjustmentsHorizontal stroke={1.5} size="20px" />
-              </HeaderAvatar>
             </InputAdornment>
           }
           aria-describedby="search-helper-text"

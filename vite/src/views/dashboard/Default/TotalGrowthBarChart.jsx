@@ -20,9 +20,9 @@ import { gridSpacing } from 'store/constant';
 import barChartOptions from './chart-data/total-growth-bar-chart';
 
 const status = [
-  { value: 'today', label: 'Today' },
-  { value: 'month', label: 'This Month' },
-  { value: 'year', label: 'This Year' }
+  { value: 'today', label: 'Diario' },
+  { value: 'month', label: 'Mes' },
+  { value: 'year', label: 'Año' }
 ];
 
 const series = [
@@ -80,10 +80,10 @@ export default function TotalGrowthBarChart({ isLoading }) {
                 <Grid>
                   <Grid container direction="column" spacing={1}>
                     <Grid>
-                      <Typography variant="subtitle2">Total Growth</Typography>
+                      <Typography variant="subtitle2">REGISTRO DE CONSULTAS </Typography>
                     </Grid>
                     <Grid>
-                      <Typography variant="h3">$2,324.00</Typography>
+                      <Typography variant="h3">1050</Typography>
                     </Grid>
                   </Grid>
                 </Grid>

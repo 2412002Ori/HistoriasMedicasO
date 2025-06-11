@@ -16,11 +16,10 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add'; // Import AddIcon
-import TableExpedienteForm from './pacientes_expediente';
+import PacientesFormulario from './pacientes_formulario';
 
 const testPacientes = [
   {
-    nro_historia: '1234', // Added history number
     nombre: 'Juan',
     apellido: 'Pérez',
     cedula: '123456789',
@@ -31,7 +30,6 @@ const testPacientes = [
     email: 'juan.perez@example.com',
   },
   {
-    nro_historia: '5678', // Added history number
     nombre: 'María',
     apellido: 'Gómez',
     cedula: '987654321',
@@ -56,9 +54,8 @@ const style = {
   p: 4,
 };
 
-const PacientesList = ({ pacientes = testPacientes }) => {
+const PacientesTriajeList = ({ pacientes = testPacientes }) => {
   const [cedulaSearchTerm, setCedulaSearchTerm] = useState('');
-  const [nrohistoriaSearchTerm, setnrohistoriaSearchTerm] = useState('');
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
@@ -68,34 +65,16 @@ const PacientesList = ({ pacientes = testPacientes }) => {
     setCedulaSearchTerm(event.target.value);
   };
 
-  const handlehistoriaSearch = (event) => {
-    setnrohistoriaSearchTerm(event.target.value);
-  };
 
   const filteredPacientes = pacientes.filter((paciente) => {
-    const nrohistoriaStr = paciente.nro_historia.toLowerCase();
     const cedulaStr = paciente.cedula.toLowerCase();
     return (
-      nrohistoriaStr.includes(nrohistoriaSearchTerm.toLowerCase()) &&
       cedulaStr.includes(cedulaSearchTerm.toLowerCase())
     );
   });
 
   return (
     <Paper>
-      <TextField
-        label="Buscar por N° Historia"
-        value={nrohistoriaSearchTerm}
-        onChange={handlehistoriaSearch}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          ),
-        }}
-        sx={{ mb: 2, mt: 2, marginLeft: 2 }}
-      />
       <TextField
         label="Buscar por Cédula"
         value={cedulaSearchTerm}
@@ -120,7 +99,6 @@ const PacientesList = ({ pacientes = testPacientes }) => {
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              <TableCell>N° Historia</TableCell>
               <TableCell>Nombre</TableCell>
               <TableCell align="left">Apellido</TableCell>
               <TableCell align="left">Cédula</TableCell>
@@ -139,9 +117,6 @@ const PacientesList = ({ pacientes = testPacientes }) => {
                   key={index}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
-                  <TableCell component="th" scope="row">
-                    {paciente.nro_historia}
-                  </TableCell>
                   <TableCell>{paciente.nombre}</TableCell>
                   <TableCell align="left">{paciente.apellido}</TableCell>
                   <TableCell align="left">{paciente.cedula}</TableCell>
@@ -178,11 +153,11 @@ const PacientesList = ({ pacientes = testPacientes }) => {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <TableExpedienteForm handleClose={handleClose} />
+          <PacientesFormulario handleClose={handleClose} />
         </Box>
       </Modal>
     </Paper>
   );
 };
 
-export default PacientesList;
+export default PacientesTriajeList;

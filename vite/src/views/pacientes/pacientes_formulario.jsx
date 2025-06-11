@@ -166,7 +166,7 @@ const PacientesFormulario = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} locale={es}>
-      <Container sx={{ mt: 4, mb: 4, width: '80%' }}> {/* Increased container width */}
+      <Container sx={{ mt: 4, mb: 4 }}> {/* Increased container width */}
         <Card elevation={3}>
           <CardContent sx={{ p: 4 }}> {/* Increased padding for card content */}
             <Box mb={3}>

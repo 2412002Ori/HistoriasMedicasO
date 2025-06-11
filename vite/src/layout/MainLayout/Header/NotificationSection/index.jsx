@@ -21,7 +21,6 @@ import Box from '@mui/material/Box';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
-import NotificationList from './NotificationList';
 
 // assets
 import { IconBell } from '@tabler/icons-react';
@@ -85,29 +84,6 @@ export default function NotificationSection() {
 
   return (
     <>
-      <Box sx={{ ml: 2 }}>
-        <Avatar
-          variant="rounded"
-          sx={{
-            ...theme.typography.commonAvatar,
-            ...theme.typography.mediumAvatar,
-            transition: 'all .2s ease-in-out',
-            bgcolor: 'secondary.light',
-            color: 'secondary.dark',
-            '&[aria-controls="menu-list-grow"],&:hover': {
-              bgcolor: 'secondary.dark',
-              color: 'secondary.light'
-            }
-          }}
-          ref={anchorRef}
-          aria-controls={open ? 'menu-list-grow' : undefined}
-          aria-haspopup="true"
-          onClick={handleToggle}
-          color="inherit"
-        >
-          <IconBell stroke={1.5} size="20px" />
-        </Avatar>
-      </Box>
       <Popper
         placement={downMD ? 'bottom' : 'bottom-end'}
         open={open}

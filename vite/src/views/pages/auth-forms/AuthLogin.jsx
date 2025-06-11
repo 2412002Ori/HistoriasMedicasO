@@ -78,14 +78,14 @@ export default function AuthLogin() {
         </Grid>
         <Grid>
           <Typography variant="subtitle1" component={Link} to="/forgot-password" color="secondary" sx={{ textDecoration: 'none' }}>
-            Forgot Password?
+            olvido su contraseña?
           </Typography>
         </Grid>
       </Grid>
       <Box sx={{ mt: 2 }}>
         <AnimateButton>
           <Button color="secondary" fullWidth size="large" type="submit" variant="contained">
-            Sign In
+            INGRESAR
           </Button>
         </AnimateButton>
       </Box>

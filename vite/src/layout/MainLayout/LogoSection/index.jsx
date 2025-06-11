@@ -14,7 +14,7 @@ import { Box } from '@mui/material';
 export default function LogoSection() {
   return (
     <Link component={RouterLink} to={DASHBOARD_PATH} aria-label="theme-logo">
-      <Box component="img" src={LogoImage} alt="Logo" sx={{ width: 70, height: 'auto' }} />
+      <Box component="img" src={LogoImage} alt="Logo" sx={{ width: 70, height: 'auto', mr: 4 }} />
     </Link>
   );
 }

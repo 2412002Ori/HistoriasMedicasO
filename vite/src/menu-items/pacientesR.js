@@ -14,18 +14,18 @@ const PacientesR = {
   children : [
     {
       id: 'pacientes_inscripcion',
-      title: 'Inscripción',
+      title: 'TRIAJE ',
       type: 'item',
-      url: '/pacientes_inscripcion',
+      url: '/pacientes/triaje/list',
       icon: FolderSharedIcon,
       breadcrumbs: false
     },
     {
       id: 'pacientes_lista',
-      title: 'Consulta',
+      title: 'EXPEDIENTES',
       type: 'item',
       url: '/pacientes_lista',
-      icon: icons.IconBrandChrome,
+      icon: FolderSharedIcon,
       breadcrumbs: false
     }
   ]

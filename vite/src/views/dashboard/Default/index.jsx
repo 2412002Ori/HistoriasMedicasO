@@ -26,37 +26,26 @@ export default function Dashboard() {
   }, []);
 
   return (
+    <Grid>
+
     <Grid container spacing={gridSpacing}>
-      <Grid size={12}>
-        <Grid container spacing={gridSpacing}>
-          <Grid size={{ lg: 4, md: 6, sm: 6, xs: 12 }}>
-            <EarningCard isLoading={isLoading} />
-          </Grid>
-          <Grid size={{ lg: 4, md: 6, sm: 6, xs: 12 }}>
-            <TotalOrderLineChartCard isLoading={isLoading} />
-          </Grid>
-          <Grid size={{ lg: 4, md: 12, sm: 12, xs: 12 }}>
-            <Grid container spacing={gridSpacing}>
-              <Grid size={{ sm: 6, xs: 12, md: 6, lg: 12 }}>
-                <TotalIncomeDarkCard isLoading={isLoading} />
-              </Grid>
-              <Grid size={{ sm: 6, xs: 12, md: 6, lg: 12 }}>
-                <TotalIncomeLightCard
-                  {...{
-                    isLoading: isLoading,
-                    total: 203,
-                    label: 'Total Income',
-                    icon: <StorefrontTwoToneIcon fontSize="inherit" />
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </Grid>
-        </Grid>
+      <Grid item xs={12} sm={6} md={6} lg={7} > {/* Added item */}
+        <TotalIncomeDarkCard isLoading={isLoading} />
       </Grid>
-      <Grid size={12}>
+      <Grid item xs={12} sm={6} md={6} lg={5}> {/* Added item */}
+        <TotalIncomeLightCard
+          {...{
+            isLoading: isLoading,
+            total: 20,
+            label: 'expedientes retirados',
+            icon: <StorefrontTwoToneIcon fontSize="inherit" />
+          }}
+        />
+      </Grid>
+    </Grid>
+      <Grid size={12} sx={{ mt: 2 }}>
         <Grid container spacing={gridSpacing}>
-          <Grid size={{ xs: 12, md: 8 }}>
+          <Grid size={{ xs: 12, md: 8  }}>
             <TotalGrowthBarChart isLoading={isLoading} />
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>

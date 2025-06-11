@@ -14,7 +14,8 @@ import MainCard from 'ui-component/cards/MainCard';
 import TotalIncomeCard from 'ui-component/cards/Skeleton/TotalIncomeCard';
 
 // assets
-import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
+//import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
+import FolderSharedIcon from '@mui/icons-material/FolderShared'; // Import FolderSharedIcon
 
 // styles
 const CardWrapper = styled(MainCard)(({ theme }) => ({
@@ -66,7 +67,7 @@ export default function TotalIncomeDarkCard({ isLoading }) {
                       color: '#fff'
                     }}
                   >
-                    <TableChartOutlinedIcon fontSize="inherit" />
+                    <FolderSharedIcon fontSize="inherit" /> {/* Use FolderSharedIcon */}
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText
@@ -77,12 +78,12 @@ export default function TotalIncomeDarkCard({ isLoading }) {
                   }}
                   primary={
                     <Typography variant="h4" sx={{ color: '#fff' }}>
-                      $203k
+                      102
                     </Typography>
                   }
                   secondary={
                     <Typography variant="subtitle2" sx={{ color: 'primary.light', mt: 0.25 }}>
-                      Total Income
+                      Expedienes Activos
                     </Typography>
                   }
                 />

@@ -38,20 +38,15 @@ export default function BajajAreaChartCard() {
           <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
             <Grid>
               <Typography variant="subtitle1" sx={{ color: 'secondary.dark' }}>
-                Bajaj Finery
+               2025
               </Typography>
             </Grid>
             <Grid>
               <Typography variant="h4" sx={{ color: 'grey.800' }}>
-                $1839.00
+                10
               </Typography>
             </Grid>
           </Grid>
-        </Grid>
-        <Grid size={12}>
-          <Typography variant="subtitle2" sx={{ color: 'grey.800' }}>
-            10% Profit
-          </Typography>
         </Grid>
       </Grid>
       <Chart {...chartConfig} />
