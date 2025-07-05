@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -10,54 +10,76 @@ import {
   FormControl,
   Alert,
 } from "@mui/material";
+import { consultasAPI } from '../../api/consultas';
+import { API_BASE_URL } from '../../config';
 
-// Mock data for expedientes and doctores - replace with your actual data source
-const expedientes = [
-  { id: 1, nombre: "Expediente 1" },
-  { id: 2, nombre: "Expediente 2" },
-];
-
-const doctores = [
-  { id: 1, nombre: "Doctor 1", horario: { inicio: "08:00", fin: "17:00" } },
-  { id: 2, nombre: "Doctor 2", horario: { inicio: "09:00", fin: "18:00" } },
-];
-
-export default function ConsultaForm() {
+export default function ConsultaForm({ onClose, onConsultaCreated }) {
   const [form, setForm] = useState({
-    id_expediente: "",
-    id_doctor: "",
-    fecha: "",
-    hora: "",
-    motivo: "",
+    CONIDEXP: '',
+    CONIDDOC: '',
+    CONFEC__: '',
+    CONDIA__: '',
+    CONMOTIV: '',
   });
-
+  const [expedientes, setExpedientes] = useState([]);
+  const [doctores, setDoctores] = useState([]);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchExpedientes = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/expedientes`);
+        const data = await res.json();
+        setExpedientes(data.data || []);
+      } catch (e) { setExpedientes([]); }
+    };
+    const fetchDoctores = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/doctores`);
+        const data = await res.json();
+        setDoctores(data.data || []);
+      } catch (e) { setDoctores([]); }
+    };
+    fetchExpedientes();
+    fetchDoctores();
+  }, []);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'CONFEC__') {
+      // Calcular el día de la semana en español
+      const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      const fecha = new Date(value);
+      const diaSemana = dias[fecha.getDay()];
+      setForm((prev) => ({ ...prev, CONFEC__: value, CONDIA__: diaSemana }));
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    const doctor = doctores.find((d) => d.id === parseInt(form.id_doctor));
-    if (!doctor) return setError("Doctor no encontrado");
-
-    const horaConsulta = form.hora;
-    const [h, m] = horaConsulta.split(":").map(Number);
-    const inicio = parseInt(doctor.horario.inicio.replace(":", ""));
-    const fin = parseInt(doctor.horario.fin.replace(":", ""));
-    const actual = h * 100 + m;
-
-    if (actual < inicio || actual > fin) {
-      return setError(
-        `El doctor solo atiende entre ${doctor.horario.inicio} y ${doctor.horario.fin}`
-      );
+    setIsLoading(true);
+    try {
+      // Validación básica
+      if (!form.CONIDEXP || !form.CONIDDOC || !form.CONFEC__ || !form.CONDIA__ || !form.CONMOTIV) {
+        setError('Completa todos los campos');
+        setIsLoading(false);
+        return;
+      }
+      console.log('Enviando consulta:', form);
+      const response = await consultasAPI.create(form);
+      console.log('Respuesta backend:', response);
+      if (onConsultaCreated) onConsultaCreated();
+      if (onClose) onClose();
+    } catch (err) {
+      console.error('Error al registrar consulta:', err);
+      setError(err.message || 'Error al registrar consulta');
+    } finally {
+      setIsLoading(false);
     }
-
-    console.log("Consulta registrada:", form);
-    alert("Consulta registrada con éxito");
   };
 
   return (
@@ -71,14 +93,14 @@ export default function ConsultaForm() {
       <FormControl fullWidth>
         <InputLabel>Expediente</InputLabel>
         <Select
-          name="id_expediente"
-          value={form.id_expediente}
+          name="CONIDEXP"
+          value={form.CONIDEXP}
           onChange={handleChange}
           label="Expediente"
         >
           {expedientes.map((exp) => (
-            <MenuItem key={exp.id} value={exp.id}>
-              {exp.nombre}
+            <MenuItem key={exp.EXPIDEXP || exp.id} value={exp.EXPIDEXP || exp.id}>
+              {exp.EXPNOMBR || exp.nombre || `Expediente ${exp.EXPIDEXP || exp.id}`}
             </MenuItem>
           ))}
         </Select>
@@ -87,14 +109,14 @@ export default function ConsultaForm() {
       <FormControl fullWidth>
         <InputLabel>Doctor</InputLabel>
         <Select
-          name="id_doctor"
-          value={form.id_doctor}
+          name="CONIDDOC"
+          value={form.CONIDDOC}
           onChange={handleChange}
           label="Doctor"
         >
           {doctores.map((doc) => (
-            <MenuItem key={doc.id} value={doc.id}>
-              {doc.nombre}
+            <MenuItem key={doc.DOCIDDOC || doc.id} value={doc.DOCIDDOC || doc.id}>
+              {doc.DOCNOMBR || doc.nombre || `Doctor ${doc.DOCIDDOC || doc.id}`}
             </MenuItem>
           ))}
         </Select>
@@ -103,27 +125,26 @@ export default function ConsultaForm() {
       <TextField
         label="Fecha"
         type="date"
-        name="fecha"
+        name="CONFEC__"
         InputLabelProps={{ shrink: true }}
-        value={form.fecha}
+        value={form.CONFEC__}
         onChange={handleChange}
         fullWidth
       />
 
       <TextField
-        label="Hora"
-        type="time"
-        name="hora"
-        InputLabelProps={{ shrink: true }}
-        value={form.hora}
+        label="Día de la semana"
+        name="CONDIA__"
+        value={form.CONDIA__}
         onChange={handleChange}
         fullWidth
+        disabled
       />
 
       <TextField
         label="Motivo"
-        name="motivo"
-        value={form.motivo}
+        name="CONMOTIV"
+        value={form.CONMOTIV}
         onChange={handleChange}
         multiline
         rows={3}
@@ -132,8 +153,8 @@ export default function ConsultaForm() {
 
       {error && <Alert severity="error">{error}</Alert>}
 
-      <Button variant="contained" type="submit">
-        Registrar
+      <Button variant="contained" type="submit" disabled={isLoading}>
+        {isLoading ? 'Guardando...' : 'Registrar'}
       </Button>
     </Box>
   );

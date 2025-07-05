@@ -9,6 +9,7 @@ const icons = { IconBrandChrome, IconHelp };
 
 const Consultas = {
   id: 'consultas',
+  title: 'Consultas',
   type: 'group',
   children : [
     {
@@ -19,25 +20,6 @@ const Consultas = {
         icon: FolderSharedIcon,
         breadcrumbs: false
     } , 
-    { 
-        id: 'QUIMIO',
-        title: 'QUIMIO ',
-        type: 'item',
-        url: '/consultas_inscripcion',
-        icon: FolderSharedIcon,
-        breadcrumbs: false
-    },
-    { 
-        id: 'QUIMIO',
-        title: 'HOSPITALIZACION ',
-        type: 'item',
-        url: '/consultas_inscripcion',
-        icon: FolderSharedIcon,
-        breadcrumbs: false
-    },
-  
-  
-  
   ]
 
 };

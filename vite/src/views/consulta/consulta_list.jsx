@@ -19,6 +19,8 @@ import {
 import AddIcon from '@mui/icons-material/Add'; // Import AddIcon
 import ConsultaForm from "../consulta/consulta_formulario";
 import DoctorList from "../Doctores/Doctores_list";
+import { consultasAPI } from '../../api/consultas';
+import { API_BASE_URL } from '../../config';
 
 // Styles for aligning buttons in ConsultaForm
 const buttonContainerStyle = {
@@ -48,60 +50,53 @@ export default function ConsultaList() {
    const handleOpenDoctorModal = () => setOpenDoctorModal(true);
     const handleCloseDoctorModal = () => setOpenDoctorModal(false);
 
+  const fetchConsultas = async () => {
+    try {
+      const data = await consultasAPI.getAll();
+      setConsultas(data);
+    } catch (error) {
+      setConsultas([]);
+      console.error("Error fetching consultas:", error);
+    }
+  };
+  const fetchDoctores = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/doctores`);
+      const data = await res.json();
+      setDoctores(data.data || []);
+    } catch (e) { setDoctores([]); }
+  };
+  const fetchExpedientes = async () => {
+    try {
+      const res = await fetch('/api/expedientes');
+      const data = await res.json();
+      setExpedientes(data.data || []);
+    } catch (e) { setExpedientes([]); }
+  };
+
   useEffect(() => {
-    // Replace with your actual API endpoints
-    const fetchConsultas = async () => {
-      try {
-        const response = await fetch("/api/consultas");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setConsultas(data);
-      } catch (error) {
-        console.error("Error fetching consultas:", error);
-      }
-    };
-
-    const fetchDoctores = async () => {
-      try {
-        const response = await fetch("/api/doctores");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setDoctores(data);
-      } catch (error) {
-        console.error("Error fetching doctores:", error);
-      }
-    };
-
-    const fetchExpedientes = async () => {
-      try {
-        const response = await fetch("/api/expedientes");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setExpedientes(data);
-      } catch (error) {
-        console.error("Error fetching expedientes:", error);
-      }
-    };
-
     fetchConsultas();
     fetchDoctores();
     fetchExpedientes();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
+
+  const handleConsultaCreated = () => {
+    fetchConsultas();
+    setOpen(false);
+  };
 
   const getNombrePaciente = (id) => {
-    const paciente = expedientes.find((exp) => exp.id === id);
-    return paciente?.nombre || "Desconocido";
+    const paciente = expedientes.find((exp) => exp.EXPIDEXP === id || exp.id === id);
+    return paciente?.EXPNOMBR || paciente?.nombre || "Desconocido";
+  };
+  const getNombreDoctor = (id) => {
+    const doctor = doctores.find((doc) => doc.DOCIDDOC === id || doc.id === id);
+    return doctor?.DOCNOMBR || doctor?.nombre || "Desconocido";
   };
 
   const filtered = consultas.filter((consulta) => {
-    const coincideDoctor = doctorId ? consulta.id_doctor === parseInt(doctorId) : true;
-    const coincideFecha = fecha ? consulta.fecha === fecha : true;
+    const coincideDoctor = doctorId ? consulta.CONIDDOC === parseInt(doctorId) : true;
+    const coincideFecha = fecha ? (consulta.CONFEC__ && consulta.CONFEC__.slice(0, 10) === fecha) : true;
     return coincideDoctor && coincideFecha;
   });
 
@@ -120,8 +115,8 @@ export default function ConsultaList() {
           >
             <MenuItem value="">Todos</MenuItem>
             {doctores.map((doc) => (
-              <MenuItem key={doc.id} value={doc.id}>
-                {doc.nombre}
+              <MenuItem key={doc.DOCIDDOC} value={doc.DOCIDDOC}>
+                {doc.DOCNOMBR}
               </MenuItem>
             ))}
           </Select>
@@ -146,29 +141,28 @@ export default function ConsultaList() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Paciente</TableCell>
-              <TableCell>Hora</TableCell>
+              <TableCell>ID Consulta</TableCell>
+              <TableCell>Expediente</TableCell>
               <TableCell>Doctor</TableCell>
-              <TableCell>Motivo</TableCell>
               <TableCell>Fecha</TableCell>
+              <TableCell>Dia</TableCell>
+              <TableCell>Motivo</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filtered.map((consulta) => {
-              const doctor = doctores.find((d) => d.id === consulta.id_doctor);
-              return (
-                <TableRow key={consulta.id}>
-                  <TableCell>{getNombrePaciente(consulta.id_expediente)}</TableCell>
-                  <TableCell>{consulta.hora}</TableCell>
-                  <TableCell>{doctor?.nombre || "Desconocido"}</TableCell>
-                  <TableCell>{consulta.motivo}</TableCell>
-                  <TableCell>{consulta.fecha}</TableCell>
-                </TableRow>
-              );
-            })}
+            {filtered.map((consulta) => (
+              <TableRow key={consulta.CONIDCON || consulta.id}>
+                <TableCell>{consulta.CONIDCON}</TableCell>
+                <TableCell>{consulta.expediente_nombre || getNombrePaciente(consulta.CONIDEXP)}</TableCell>
+                <TableCell>{consulta.doctor_nombre ? `${consulta.doctor_nombre} ${consulta.doctor_apellido}` : getNombreDoctor(consulta.CONIDDOC)}</TableCell>
+                <TableCell>{consulta.CONFEC__}</TableCell>
+                <TableCell>{consulta.CONDIA__}</TableCell>
+                <TableCell>{consulta.CONMOTIV}</TableCell>
+              </TableRow>
+            ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={6} align="center">
                   No hay consultas registradas.
                 </TableCell>
               </TableRow>
@@ -197,7 +191,7 @@ export default function ConsultaList() {
           <Typography id="modal-modal-title" variant="h6" component="h2">
             Agregar Nueva Consulta
           </Typography>
-          <ConsultaForm onClose={handleClose} buttonContainerStyle={buttonContainerStyle} /> {/* Render the ConsultaForm inside the modal */}
+          <ConsultaForm onClose={handleClose} onConsultaCreated={handleConsultaCreated} buttonContainerStyle={buttonContainerStyle} /> {/* Render the ConsultaForm inside the modal */}
         </Box>
       </Modal>
 

@@ -11,54 +11,62 @@ import {
   CardContent,
   FormControl,
   InputLabel,
-  Select
+  Select,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers';
 import { es } from 'date-fns/locale';
+import { expedientesAPI } from '../../api/expedientes';
+import { pacientesAPI } from '../../api/pacientes';
 
-const TableExpedienteForm = () => {
+const fetchDoctores = async () => {
+  const response = await fetch('http://localhost:3003/api/doctores');
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || 'Error al obtener doctores');
+  }
+  return result.data;
+};
+
+const TableExpedienteForm = ({ handleClose }) => {
   const [fechaCreacion, setFechaCreacion] = useState(null);
   const [doctorTratante, setDoctorTratante] = useState('');
   const [observacionesGenerales, setObservacionesGenerales] = useState('');
-  const [pacientes, setPacientes] = useState([]); // Datos de pacientes para el select
+  const [pacientes, setPacientes] = useState([]);
+  const [doctores, setDoctores] = useState([]);
   const [idPaciente, setIdPaciente] = useState('');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Simulate fetching doctors from an API
-  const doctorOptions = [
-    { id: 1, name: 'Dr. Smith' },
-    { id: 2, name: 'Dr. Jones' },
-    { id: 3, name: 'Dr. Brown' },
-  ];
-
-  // useEffect to fetch patients (replace with your actual API call)
   useEffect(() => {
-    // Simulando una llamada a la API para obtener la lista de pacientes
-    const fetchPacientes = async () => {
-      // Replace this with your actual API endpoint
-      const pacientesData = [
-        { id_paciente: 1, nombre: 'Paciente 1' },
-        { id_paciente: 2, nombre: 'Paciente 2' },
-        { id_paciente: 3, nombre: 'Paciente 3' },
-      ];
-      setPacientes(pacientesData);
-    };
-
-    fetchPacientes();
+    pacientesAPI.getAll().then(setPacientes).catch(() => setPacientes([]));
+    fetchDoctores().then(setDoctores).catch(() => setDoctores([]));
   }, []);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    // Handle form submission logic here
-    const expedienteData = {
-      id_paciente: idPaciente,
-      fecha_creacion: fechaCreacion,
-      doctor_tratante: doctorTratante,
-      observaciones_generales: observacionesGenerales,
-    };
-    console.log('Expediente Data:', expedienteData);
-    // You can send this data to your backend API
+    if (!idPaciente || !fechaCreacion || !doctorTratante) {
+      setSnackbar({ open: true, message: 'Todos los campos obligatorios', severity: 'error' });
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await expedientesAPI.create({
+        EXPIDPAC: idPaciente,
+        EXPFECRE: fechaCreacion.toISOString().split('T')[0],
+        EXPDOTRA: doctorTratante,
+        EXPOBGEN: observacionesGenerales
+      });
+      setSnackbar({ open: true, message: 'Expediente creado exitosamente', severity: 'success' });
+      if (handleClose) handleClose();
+    } catch (error) {
+      setSnackbar({ open: true, message: error.message || 'Error al crear expediente', severity: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -84,25 +92,23 @@ const TableExpedienteForm = () => {
                       onChange={(e) => setIdPaciente(e.target.value)}
                     >
                       {pacientes.map((paciente) => (
-                        <MenuItem key={paciente.id_paciente} value={paciente.id_paciente}>
-                          {paciente.nombre}
+                        <MenuItem key={paciente.PACIDPAC} value={paciente.PACIDPAC}>
+                          {paciente.PACNOMBR} {paciente.PACAPELL}
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
                 </Grid>
-
                 <Grid item xs={12} md={6}>
                   <DatePicker
                     label="Fecha de Creación"
                     value={fechaCreacion}
-                    onChange={(newValue) => setFechaCreacion(newValue)}
+                    onChange={setFechaCreacion}
                     renderInput={(params) => (
                       <TextField {...params} fullWidth required sx={{ mb: 2 }} />
                     )}
                   />
                 </Grid>
-
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth required variant="outlined" sx={{ mb: 2 }}>
                     <InputLabel id="doctor-tratante-label">Doctor Tratante</InputLabel>
@@ -113,15 +119,14 @@ const TableExpedienteForm = () => {
                       label="Doctor Tratante"
                       onChange={(e) => setDoctorTratante(e.target.value)}
                     >
-                      {doctorOptions.map((doctor) => (
-                        <MenuItem key={doctor.id} value={doctor.id}>
-                          {doctor.name}
+                      {doctores.map((doctor) => (
+                        <MenuItem key={doctor.DOCIDDOC} value={doctor.DOCIDDOC}>
+                          {doctor.DOCNOMBR} {doctor.DOCAPELL}
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
                 </Grid>
-
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
@@ -136,13 +141,18 @@ const TableExpedienteForm = () => {
                 </Grid>
               </Grid>
               <Grid item xs={12} mt={3} display="flex" justifyContent="center">
-                <Button type="submit" variant="contained" color="primary">
+                <Button type="submit" variant="contained" color="primary" disabled={isLoading}>
                   Guardar
                 </Button>
               </Grid>
             </form>
           </CardContent>
         </Card>
+        <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+          <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Container>
     </LocalizationProvider>
   );

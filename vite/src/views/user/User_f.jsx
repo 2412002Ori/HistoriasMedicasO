@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Card,
@@ -9,6 +9,10 @@ import {
   InputAdornment,
   MenuItem,
   Button,
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
@@ -18,63 +22,163 @@ import CheckIcon from '@mui/icons-material/Check';
 import CakeIcon from '@mui/icons-material/Cake';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import SecurityIcon from '@mui/icons-material/Security';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { es } from 'date-fns/locale';
 
-const UserForm = () => {
+const UserForm = ({ initialValues, onSubmit, onCancel, isEditing = false }) => {
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
+    name: '',
+    lastname: '',
     email: '',
     password: '',
     status: 'active',
     role: 'user',
+    id: '',
   });
 
-  // Placeholder state and options for select fields
-  const [status, setStatus] = useState('active');
-  const [role, setRole] = useState('user');
+  const [errors, setErrors] = useState({});
+
+  // Opciones para los campos select
   const statusOptions = [
-    { value: 'active', label: 'Active' },
-    { value: 'inactive', label: 'Inactive' },
-    { value: 'suspended', label: 'Suspended' },
-  ];
-  const roleOptions = [
-    { value: 'user', label: 'User' },
-    { value: 'admin', label: 'Admin' },
-    { value: 'editor', label: 'Editor' },
+    { value: 'active', label: 'Activo' },
+    { value: 'inactive', label: 'Inactivo' },
+    { value: 'suspended', label: 'Suspendido' },
   ];
 
+  const roleOptions = [
+    { value: 'user', label: 'Usuario' },
+    { value: 'editor', label: 'Editor' },
+    { value: 'admin', label: 'Administrador' },
+    { value: 'doctor', label: 'Doctor' },
+    { value: 'nurse', label: 'Enfermero/a' },
+    { value: 'receptionist', label: 'Recepcionista' },
+  ];
+
+  // Cargar datos iniciales si se está editando
+  useEffect(() => {
+    if (initialValues && isEditing) {
+      setFormData({
+        name: initialValues.name || '',
+        lastname: initialValues.lastname || '',
+        email: initialValues.email || '',
+        password: '',
+        status: initialValues.status || 'active',
+        role: initialValues.role || 'user',
+        id: initialValues.id,
+      });
+    } else if (!isEditing) {
+      setFormData({
+        name: '',
+        lastname: '',
+        email: '',
+        password: '',
+        status: 'active',
+        role: 'user',
+        id: '',
+      });
+    }
+  }, [initialValues, isEditing]);
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    // Limpiar error del campo cuando el usuario empiece a escribir
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: '' });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'El nombre es obligatorio';
+    }
+
+    if (!formData.lastname.trim()) {
+      newErrors.lastname = 'El apellido es obligatorio';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'El email es obligatorio';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'El email no es válido';
+    }
+
+    if (!isEditing && !formData.password.trim()) {
+      newErrors.password = 'La contraseña es obligatoria';
+    } else if (formData.password && formData.password.length < 6) {
+      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+    }
+
+    if (!formData.role) {
+      newErrors.role = 'El rol es obligatorio';
+    }
+
+    if (!formData.status) {
+      newErrors.status = 'El estado es obligatorio';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
+    if (validateForm()) {
+      const userData = {
+        name: formData.name,
+        lastname: formData.lastname,
+        email: formData.email,
+        password: formData.password,
+        status: formData.status,
+        role: formData.role || 'user',
+        id: isEditing ? formData.id : undefined,
+      };
+      console.log('Payload enviado desde el formulario:', userData);
+      if (onSubmit) {
+        onSubmit(userData);
+      }
+      if (!isEditing) {
+        setFormData({
+          name: '',
+          lastname: '',
+          email: '',
+          password: '',
+          status: 'active',
+          role: 'user',
+          id: '',
+        });
+      }
+    }
   };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} locale={es}>
-      <Container sx={{ mt: 4, mb: 4 , width: '100%' , alignItems: 'center'}}>
+      <Container sx={{ mt: 2, mb: 2, width: '100%' }}>
         <Card elevation={3}>
           <CardContent sx={{ p: 4 }}>
             <Typography variant="h5" align="center" gutterBottom>
-              User Form
+              {isEditing ? 'Editar Usuario' : 'Nuevo Usuario'}
             </Typography>
             <form onSubmit={handleSubmit}>
               <Grid container spacing={3}>
+                {/* Primera columna */}
                 <Grid item xs={12} md={6}>
-                  <Grid container direction="column" spacing={3} alignItems="center">
-                    <Grid item sx={{ width: '100%' }}>
+                  <Grid container direction="column" spacing={3}>
+                    <Grid item>
                       <TextField
                         fullWidth
-                        label="First Name"
-                        name="first_name"
-                        value={formData.first_name}
+                        label="Nombre Completo"
+                        name="name"
+                        value={formData.name}
                         onChange={handleChange}
+                        error={!!errors.name}
+                        helperText={errors.name}
                         required
                         InputProps={{
                           startAdornment: (
@@ -83,16 +187,17 @@ const UserForm = () => {
                             </InputAdornment>
                           ),
                         }}
-                        sx={{ mb: 2 }}
                       />
                     </Grid>
-                    <Grid item sx={{ width: '100%' }}>
+                    <Grid item>
                       <TextField
                         fullWidth
-                        label="Last Name"
-                        name="last_name"
-                        value={formData.last_name}
+                        label="Apellido"
+                        name="lastname"
+                        value={formData.lastname}
                         onChange={handleChange}
+                        error={!!errors.lastname}
+                        helperText={errors.lastname}
                         required
                         InputProps={{
                           startAdornment: (
@@ -101,10 +206,9 @@ const UserForm = () => {
                             </InputAdornment>
                           ),
                         }}
-                        sx={{ mb: 2 }}
                       />
                     </Grid>
-                    <Grid item sx={{ width: '100%' }}>
+                    <Grid item>
                       <TextField
                         fullWidth
                         label="Email"
@@ -112,6 +216,8 @@ const UserForm = () => {
                         type="email"
                         value={formData.email}
                         onChange={handleChange}
+                        error={!!errors.email}
+                        helperText={errors.email}
                         required
                         InputProps={{
                           startAdornment: (
@@ -120,18 +226,19 @@ const UserForm = () => {
                             </InputAdornment>
                           ),
                         }}
-                        sx={{ mb: 2 }}
                       />
                     </Grid>
-                    <Grid item sx={{ width: '100%' }}>
+                    <Grid item>
                       <TextField
                         fullWidth
-                        label="Password"
+                        label={isEditing ? "Nueva Contraseña (opcional)" : "Contraseña"}
                         name="password"
                         type="password"
                         value={formData.password}
                         onChange={handleChange}
-                        required
+                        error={!!errors.password}
+                        helperText={errors.password}
+                        required={!isEditing}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -139,59 +246,99 @@ const UserForm = () => {
                             </InputAdornment>
                           ),
                         }}
-                        sx={{ mb: 2 }}
                       />
                     </Grid>
                   </Grid>
                 </Grid>
 
+                {/* Segunda columna */}
                 <Grid item xs={12} md={6}>
-                  <Grid container direction="column" spacing={3} alignItems="center">
-                    <Grid item sx={{ width: '100%' }}>
-                      <TextField
-                        select
-                        fullWidth
-                        label="Status"
-                        name="status"
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                        variant="outlined"
-                      >
-                        {statusOptions.map((option) => (
-                          <MenuItem key={option.value} value={option.value}>
-                            {option.label}
-                          </MenuItem>
-                        ))}
-                      </TextField>
+                  <Grid container direction="column" spacing={3}>
+                    <Grid item>
+                      <FormControl fullWidth error={!!errors.role} required>
+                        <InputLabel>Rol</InputLabel>
+                        <Select
+                          name="role"
+                          value={formData.role}
+                          onChange={handleChange}
+                          label="Rol"
+                          startAdornment={
+                            <InputAdornment position="start">
+                              <SecurityIcon />
+                            </InputAdornment>
+                          }
+                        >
+                          {roleOptions.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                              {option.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {errors.role && (
+                          <Typography variant="caption" color="error">
+                            {errors.role}
+                          </Typography>
+                        )}
+                      </FormControl>
                     </Grid>
-                    <Grid item sx={{ width: '100%' }}>
-                      <TextField
-                        select
-                        fullWidth
-                        label="Role"
-                        name="role"
-                        value={role}
-                        onChange={(e) => setRole(e.target.value)}
-                        variant="outlined"
-                      >
-                        {roleOptions.map((option) => (
-                          <MenuItem key={option.value} value={option.value}>
-                            {option.label}
-                          </MenuItem>
-                        ))}
-                      </TextField>
+                    <Grid item>
+                      <FormControl fullWidth error={!!errors.status} required>
+                        <InputLabel>Estado</InputLabel>
+                        <Select
+                          name="status"
+                          value={formData.status}
+                          onChange={handleChange}
+                          label="Estado"
+                          startAdornment={
+                            <InputAdornment position="start">
+                              <AssignmentIndIcon />
+                            </InputAdornment>
+                          }
+                        >
+                          {statusOptions.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                              {option.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {errors.status && (
+                          <Typography variant="caption" color="error">
+                            {errors.status}
+                          </Typography>
+                        )}
+                      </FormControl>
                     </Grid>
                   </Grid>
+                </Grid>
+
+                {/* Botones */}
+                <Grid item xs={12}>
+                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 3 }}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      startIcon={<CheckIcon />}
+                    >
+                      {isEditing ? 'Actualizar Usuario' : 'Guardar Usuario'}
+                    </Button>
+                    {onCancel && (
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        size="large"
+                        onClick={onCancel}
+                      >
+                        Cancelar
+                      </Button>
+                    )}
+                  </Box>
                 </Grid>
               </Grid>
             </form>
           </CardContent>
         </Card>
-        <Grid item xs={12} mt={3} display="flex" justifyContent="center">
-          <Button type="submit" variant="contained" color="primary">
-            Guardar
-          </Button>
-        </Grid>
       </Container>
     </LocalizationProvider>
   );

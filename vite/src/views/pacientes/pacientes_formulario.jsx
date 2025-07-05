@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   TextField,
   Button,
@@ -9,7 +9,9 @@ import {
   Box,
   Card,
   CardContent,
-  InputAdornment
+  InputAdornment,
+  Alert,
+  Snackbar
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -21,154 +23,209 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
+import { pacientesAPI } from '../../api/pacientes';
 
-const PacientesFormulario = () => {
-  // Estados para los campos del formulario
-  const [nombre, setNombre] = useState('');
-  const [apellido, setApellido] = useState('');
-  const [cedula, setCedula] = useState('');
-  const [fechaNacimiento, setFechaNacimiento] = useState(null);
-  const [sexo, setSexo] = useState('');
-  const [direccion, setDireccion] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [email, setEmail] = useState('');
-  const [tipoPaciente, setTipoPaciente] = useState('');
+const fetchDoctores = async () => {
+  const response = await fetch('http://localhost:3003/api/doctores');
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || 'Error al obtener doctores');
+  }
+  return result.data;
+};
+
+const PacientesFormulario = ({ handleClose, onPatientCreated }) => {
+  // Estados para los campos del formulario (adaptados a la estructura real de la BD)
+  const [PACNOMBR, setPACNOMBR] = useState('');
+  const [PACAPELL, setPACAPELL] = useState('');
+  const [PACCEDUL, setPACCEDUL] = useState('');
+  const [PACFENAC, setPACFENAC] = useState(null);
+  const [PACSEXO_, setPACSEXO_] = useState('');
+  const [PACDIREC, setPACDIREC] = useState('');
+  const [PACTELEF, setPACTELEF] = useState('');
+  const [PACEMAIL, setPACEMAIL] = useState('');
 
   // Estados para los errores de validación
-  const [nombreError, setNombreError] = useState('');
-  const [apellidoError, setApellidoError] = useState('');
-  const [cedulaError, setCedulaError] = useState('');
-  const [fechaNacimientoError, setFechaNacimientoError] = useState('');
-  const [sexoError, setSexoError] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [tipoPacienteError, setTipoPacienteError] = useState('');
+  const [PACNOMBRError, setPACNOMBRError] = useState('');
+  const [PACAPELLError, setPACAPELLError] = useState('');
+  const [PACCEDULError, setPACCEDULError] = useState('');
+  const [PACFENACError, setPACFENACError] = useState('');
+  const [PACSEXO_Error, setPACSEXO_Error] = useState('');
+  const [PACEMAILError, setPACEMAILError] = useState('');
 
-  const sexoption = [
+  // Estados para notificaciones
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+
+  // Estado para loading
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [doctorId, setDoctorId] = useState('');
+  const [doctores, setDoctores] = useState([]);
+
+  const sexoOptions = [
     {
-      value: 'femenino',
-      label: 'femenino',
-    },
-    {
-      value: 'masculino',
+      value: 'M',
       label: 'Masculino',
     },
     {
-      value: 'otro',
-      label: '  Otro',
+      value: 'F',
+      label: 'Femenino',
     }
   ];
 
-  const tipoPacienteOptions = [
-    {
-      value: 'triaje',
-      label: 'Triaje',
-    },
-    {
-      value: 'oncologico',
-      label: 'Oncológico',
-    },
-  ];
+  useEffect(() => {
+    fetchDoctores().then(setDoctores).catch(() => setDoctores([]));
+  }, []);
+
+  // Función para mostrar notificaciones
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({
+      open: true,
+      message,
+      severity
+    });
+  };
+
+  // Función para cerrar notificación
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
 
   // Función para validar el formulario
   const validarFormulario = () => {
     let isValid = true;
 
     // Validar nombre
-    if (!nombre.trim()) {
-      setNombreError('El nombre es obligatorio');
+    if (!PACNOMBR.trim()) {
+      setPACNOMBRError('El nombre es obligatorio');
       isValid = false;
     } else {
-      setNombreError('');
+      setPACNOMBRError('');
     }
 
     // Validar apellido
-    if (!apellido.trim()) {
-      setApellidoError('El apellido es obligatorio');
+    if (!PACAPELL.trim()) {
+      setPACAPELLError('El apellido es obligatorio');
       isValid = false;
     } else {
-      setApellidoError('');
+      setPACAPELLError('');
     }
 
     // Validar cédula
-    if (!cedula.trim()) {
-      setCedulaError('La cédula es obligatoria');
+    if (!PACCEDUL.trim()) {
+      setPACCEDULError('La cédula es obligatoria');
       isValid = false;
-    } else if (!/^\d+$/.test(cedula)) {
-      setCedulaError('La cédula debe contener solo números');
+    } else if (!/^\d+$/.test(PACCEDUL)) {
+      setPACCEDULError('La cédula debe contener solo números');
       isValid = false;
     } else {
-      setCedulaError('');
+      setPACCEDULError('');
     }
 
     // Validar fecha de nacimiento
-    if (!fechaNacimiento) {
-      setFechaNacimientoError('La fecha de nacimiento es obligatoria');
+    if (!PACFENAC) {
+      setPACFENACError('La fecha de nacimiento es obligatoria');
       isValid = false;
     } else {
-      setFechaNacimientoError('');
+      setPACFENACError('');
     }
 
     // Validar sexo
-    if (!sexo) {
-      setSexoError('El sexo es obligatorio');
+    if (!PACSEXO_) {
+      setPACSEXO_Error('El sexo es obligatorio');
       isValid = false;
     } else {
-      setSexoError('');
-    }
-    // Validar tipo de paciente
-    if (!tipoPaciente) {
-      setTipoPacienteError('El tipo de paciente es obligatorio');
-      isValid = false;
-    } else {
-      setTipoPacienteError('');
+      setPACSEXO_Error('');
     }
 
     // Validar email
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setEmailError('El email no es válido');
+    if (PACEMAIL && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(PACEMAIL)) {
+      setPACEMAILError('El email no es válido');
       isValid = false;
     } else {
-      setEmailError('');
+      setPACEMAILError('');
+    }
+
+    // Validar doctor
+    if (!doctorId) {
+      showSnackbar('Debes seleccionar un doctor tratante', 'error');
+      isValid = false;
     }
 
     return isValid;
   };
 
+  // Función para limpiar el formulario
+  const limpiarFormulario = () => {
+    setPACNOMBR('');
+    setPACAPELL('');
+    setPACCEDUL('');
+    setPACFENAC(null);
+    setPACSEXO_('');
+    setPACDIREC('');
+    setPACTELEF('');
+    setPACEMAIL('');
+    setDoctorId('');
+    
+    // Limpiar errores
+    setPACNOMBRError('');
+    setPACAPELLError('');
+    setPACCEDULError('');
+    setPACFENACError('');
+    setPACSEXO_Error('');
+    setPACEMAILError('');
+  };
+
   // Función para manejar el envío del formulario
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    if (validarFormulario()) {
-      // Aquí puedes enviar los datos del formulario a tu backend
+    
+    if (!validarFormulario()) {
+      showSnackbar('Por favor, corrige los errores en el formulario', 'error');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
       const paciente = {
-        nombre,
-        apellido,
-        cedula,
-        fecha_nacimiento: fechaNacimiento,
-        sexo,
-        direccion,
-        telefono,
-        email,
-        tipoPaciente,
+        PACNOMBR: PACNOMBR.trim(),
+        PACAPELL: PACAPELL.trim(),
+        PACCEDUL: PACCEDUL.trim(),
+        PACFENAC: PACFENAC.toISOString().split('T')[0], // Convertir a formato YYYY-MM-DD
+        PACSEXO_,
+        PACDIREC: PACDIREC.trim(),
+        PACTELEF: PACTELEF.trim(),
+        PACEMAIL: PACEMAIL.trim(),
+        DOCTORID: doctorId // Nuevo campo para el doctor
       };
-      console.log('Datos del paciente:', paciente);
-      // Reiniciar el formulario
-      setNombre('');
-      setApellido('');
-      setCedula('');
-      setFechaNacimiento(null);
-      setSexo('');
-      setDireccion('');
-      setTelefono('');
-      setEmail('');
-      setTipoPaciente('');
+
+      await pacientesAPI.create(paciente);
+      
+      showSnackbar('Paciente guardado exitosamente', 'success');
+      limpiarFormulario();
+      
+      // Call the callback to refresh the parent component's list
+      if (onPatientCreated) {
+        onPatientCreated();
+      }
+    } catch (error) {
+      console.error('Error al enviar datos:', error);
+      showSnackbar(error.message || 'Error de conexión. Verifica que el servidor esté funcionando.', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} locale={es}>
-      <Container sx={{ mt: 4, mb: 4 }}> {/* Increased container width */}
+      <Container sx={{ mt: 4, mb: 4 }}>
         <Card elevation={3}>
-          <CardContent sx={{ p: 4 }}> {/* Increased padding for card content */}
+          <CardContent sx={{ p: 4 }}>
             <Box mb={3}>
               <Typography variant="h5" align="center" gutterBottom>
                 Formulario de Paciente
@@ -176,17 +233,18 @@ const PacientesFormulario = () => {
             </Box>
             <form onSubmit={handleSubmit}>
               <Grid container spacing={3}>
-                <Grid item xs={12} md={6}> {/* First Column */}
+                <Grid item xs={12} md={6}>
                   <Grid container direction="column" spacing={3} alignItems="center">
-                    <Grid item sx={{ width: '100%' }}> {/* Ensure full width for TextField within Grid */}
+                    <Grid item sx={{ width: '100%' }}>
                       <TextField
                         fullWidth
                         label="Nombre"
-                        value={nombre}
-                        onChange={(e) => setNombre(e.target.value)}
-                        error={!!nombreError}
-                        helperText={nombreError}
+                        value={PACNOMBR}
+                        onChange={(e) => setPACNOMBR(e.target.value)}
+                        error={!!PACNOMBRError}
+                        helperText={PACNOMBRError}
                         required
+                        disabled={isLoading}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -201,11 +259,12 @@ const PacientesFormulario = () => {
                       <TextField
                         fullWidth
                         label="Apellido"
-                        value={apellido}
-                        onChange={(e) => setApellido(e.target.value)}
-                        error={!!apellidoError}
-                        helperText={apellidoError}
+                        value={PACAPELL}
+                        onChange={(e) => setPACAPELL(e.target.value)}
+                        error={!!PACAPELLError}
+                        helperText={PACAPELLError}
                         required
+                        disabled={isLoading}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -220,11 +279,12 @@ const PacientesFormulario = () => {
                       <TextField
                         fullWidth
                         label="Cédula"
-                        value={cedula}
-                        onChange={(e) => setCedula(e.target.value)}
-                        error={!!cedulaError}
-                        helperText={cedulaError}
+                        value={PACCEDUL}
+                        onChange={(e) => setPACCEDUL(e.target.value)}
+                        error={!!PACCEDULError}
+                        helperText={PACCEDULError}
                         required
+                        disabled={isLoading}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -239,17 +299,38 @@ const PacientesFormulario = () => {
                       <TextField
                         select
                         fullWidth
-                        label="Tipo de Paciente"
-                        value={tipoPaciente}
-                        onChange={(e) => setTipoPaciente(e.target.value)}
-                        error={!!tipoPacienteError}
-                        helperText={tipoPacienteError}
+                        label="Sexo"
+                        value={PACSEXO_}
+                        onChange={(e) => setPACSEXO_(e.target.value)}
+                        error={!!PACSEXO_Error}
+                        helperText={PACSEXO_Error}
                         required
+                        disabled={isLoading}
                         variant="outlined"
                       >
-                        {tipoPacienteOptions.map((option) => (
+                        {sexoOptions.map((option) => (
                           <MenuItem key={option.value} value={option.value}>
                             {option.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+                    <Grid item sx={{ width: '100%' }}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Doctor Tratante"
+                        value={doctorId}
+                        onChange={(e) => setDoctorId(e.target.value)}
+                        required
+                        disabled={isLoading}
+                        variant="outlined"
+                        sx={{ mb: 2 }}
+                      >
+                        <MenuItem value="">Seleccione un doctor</MenuItem>
+                        {doctores.map((doctor) => (
+                          <MenuItem key={doctor.DOCIDDOC} value={doctor.DOCIDDOC}>
+                            {doctor.DOCNOMBR} {doctor.DOCAPELL}
                           </MenuItem>
                         ))}
                       </TextField>
@@ -257,19 +338,20 @@ const PacientesFormulario = () => {
                   </Grid>
                 </Grid>
 
-                <Grid item xs={12} md={6}> {/* Second Column */}
+                <Grid item xs={12} md={6}>
                   <Grid container direction="column" spacing={3} alignItems="center">
                     <Grid item sx={{ width: '100%' }}>
                       <DatePicker
                         label="Fecha de Nacimiento"
-                        value={fechaNacimiento}
-                        onChange={(newValue) => setFechaNacimiento(newValue)}
+                        value={PACFENAC}
+                        onChange={(newValue) => setPACFENAC(newValue)}
+                        disabled={isLoading}
                         renderInput={(params) => (
                           <TextField
                             {...params}
                             fullWidth
-                            error={!!fechaNacimientoError}
-                            helperText={fechaNacimientoError}
+                            error={!!PACFENACError}
+                            helperText={PACFENACError}
                             required
                             InputProps={{
                               startAdornment: (
@@ -285,27 +367,11 @@ const PacientesFormulario = () => {
                     </Grid>
                     <Grid item sx={{ width: '100%' }}>
                       <TextField
-                        select
-                        fullWidth
-                        label="Género"
-                        value={sexo}
-                        onChange={(e) => setSexo(e.target.value)}
-                        helperText="Please select your gender"
-                        variant="outlined"
-                      >
-                        {sexoption.map((option) => (
-                          <MenuItem key={option.value} value={option.value}>
-                            {option.label}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    </Grid>
-                    <Grid item sx={{ width: '100%' }}>
-                      <TextField
                         fullWidth
                         label="Teléfono"
-                        value={telefono}
-                        onChange={(e) => setTelefono(e.target.value)}
+                        value={PACTELEF}
+                        onChange={(e) => setPACTELEF(e.target.value)}
+                        disabled={isLoading}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -320,10 +386,11 @@ const PacientesFormulario = () => {
                       <TextField
                         fullWidth
                         label="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        error={!!emailError}
-                        helperText={emailError}
+                        value={PACEMAIL}
+                        onChange={(e) => setPACEMAIL(e.target.value)}
+                        error={!!PACEMAILError}
+                        helperText={PACEMAILError}
+                        disabled={isLoading}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -340,8 +407,9 @@ const PacientesFormulario = () => {
                         label="Dirección"
                         multiline
                         rows={3}
-                        value={direccion}
-                        onChange={(e) => setDireccion(e.target.value)}
+                        value={PACDIREC}
+                        onChange={(e) => setPACDIREC(e.target.value)}
+                        disabled={isLoading}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -355,15 +423,38 @@ const PacientesFormulario = () => {
                   </Grid>
                 </Grid>
               </Grid>
+              
+              <Grid item xs={12} mt={3} display="flex" justifyContent="center">
+                <Button 
+                  type="submit" 
+                  variant="contained" 
+                  color="primary"
+                  disabled={isLoading}
+                  sx={{ minWidth: 120 }}
+                >
+                  {isLoading ? 'Guardando...' : 'Guardar'}
+                </Button>
+              </Grid>
             </form>
           </CardContent>
         </Card>
-        <Grid item xs={12} mt={3} display="flex" justifyContent="center">
-          <Button type="submit" variant="contained" color="primary">
-            Guardar
-          </Button>
-        </Grid>
       </Container>
+
+      {/* Snackbar para notificaciones */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </LocalizationProvider>
   );
 };

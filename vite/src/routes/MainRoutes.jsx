@@ -24,6 +24,13 @@ import ConsultaList from '../views/consulta/consulta_list';
 import Doctoresform from '../views/Doctores/Doctores_formulario';
 import DoctorList from '../views/Doctores/Doctores_list'; 
 
+// Quimioterapia
+import QuimioList from '../views/quimio/quimio_list';
+import QuimioFormulario from '../views/quimio/quimio_formulario';
+
+// Hospitalización
+import HospitalizacionList from '../views/hospitalizacion/hospitalizacion.list';
+import HospitalizacionFormulario from '../views/hospitalizacion/hospitalizacion_formulario';
 
 // sample page routing
 const SamplePage = Loadable(lazy(() => import('views/sample-page')));
@@ -97,6 +104,24 @@ const MainRoutes = {
     {
       path: '/pacientes/triaje/list',
       element: <PacientesTriajeList />
+    },
+    // Rutas de Quimioterapia
+    {
+      path: '/quimio_lista',
+      element: <QuimioList />
+    },
+    {
+      path: '/quimio_formulario',
+      element: <QuimioFormulario />
+    },
+    // Rutas de Hospitalización
+    {
+      path: '/hospitalizacion_lista',
+      element: <HospitalizacionList />
+    },
+    {
+      path: '/hospitalizacion_formulario',
+      element: <HospitalizacionFormulario />
     },
   ]
 };

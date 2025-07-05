@@ -15,6 +15,8 @@ import {
 } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import DoctorForm from "./Doctores_formulario";
+import { doctoresAPI } from '../../api/doctores';
+import { horariosAPI } from '../../api/horarios';
 
 export default function DoctorList() {
   const [doctors, setDoctors] = useState([]);
@@ -22,8 +24,37 @@ export default function DoctorList() {
   const [open, setOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
 
+  const fetchDoctors = async () => {
+    try {
+      const data = await doctoresAPI.getAll();
+      const doctorsWithHorarios = await Promise.all(
+        data.map(async (doc) => {
+          let horarios = [];
+          const docId = doc.DOCIDDOC || doc.id || doc.DOCID;
+          console.log('Buscando horarios para doctor', docId, doc);
+          try {
+            horarios = await horariosAPI.getByDoctor(docId);
+            console.log('Horarios recibidos para', docId, horarios);
+          } catch (e) {
+            console.error('Error obteniendo horarios para', docId, e);
+            horarios = [];
+          }
+          return { ...doc, horarios };
+        })
+      );
+      setDoctors(doctorsWithHorarios);
+    } catch (error) {
+      setDoctors([]);
+      console.error("Error fetching doctors:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
+
   const handleOpen = () => {
-    setSelectedDoctor(null); // Reset selected doctor when opening modal for adding
+    setSelectedDoctor(null);
     setOpen(true);
   };
 
@@ -34,32 +65,13 @@ export default function DoctorList() {
     setOpen(true);
   };
 
-  useEffect(() => {
-    // Fetch doctors from API or use mock data
-    const fetchDoctors = async () => {
-      // Replace '/api/doctors' with your actual API endpoint
-      try {
-        const response = await fetch("/api/doctors");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setDoctors(data);
-      } catch (error) {
-        console.error("Error fetching doctors:", error);
-        // If API fails, use mock data
-        setDoctors([
-          { id: 1, nombre: "John", apellido: "Doe", especialidad: "Cardiologist", telefono: "123-456-7890", email: "john.doe@example.com", dia_semana: "Lunes , MARTES ", hora_inicio: "09:00", hora_fin: "17:00" },
-          { id: 2, nombre: "Jane", apellido: "Smith", especialidad: "Dermatologist", telefono: "987-654-3210", email: "jane.smith@example.com", dia_semana: "Martes", hora_inicio: "10:00", hora_fin: "18:00" },
-        ]);
-      }
-    };
-
+  const handleDoctorCreatedOrUpdated = () => {
     fetchDoctors();
-  }, []);
+    handleClose();
+  };
 
   const filteredDoctors = doctors.filter((doctor) =>
-    doctor.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+    (doctor.DOCNOMBR || doctor.nombre || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -90,23 +102,31 @@ export default function DoctorList() {
               <TableCell>Especialidad</TableCell>
               <TableCell>Teléfono</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Día de Trabajo</TableCell>
-              <TableCell>Hora Inicio</TableCell>
-              <TableCell>Hora Fin</TableCell>
+              <TableCell>Horarios de Atención</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredDoctors.map((doctor) => (
-              <TableRow key={doctor.id}>
-                <TableCell>{doctor.nombre}</TableCell>
-                <TableCell>{doctor.apellido}</TableCell>
-                <TableCell>{doctor.especialidad}</TableCell>
-                <TableCell>{doctor.telefono}</TableCell>
-                <TableCell>{doctor.email}</TableCell>
-                <TableCell>{doctor.dia_semana}</TableCell>
-                <TableCell>{doctor.hora_inicio}</TableCell>
-                <TableCell>{doctor.hora_fin}</TableCell>
+              <TableRow key={doctor.DOCIDDOC || doctor.id || doctor.DOCID}>
+                <TableCell>{doctor.DOCNOMBR || doctor.nombre}</TableCell>
+                <TableCell>{doctor.DOCAPELL || doctor.apellido}</TableCell>
+                <TableCell>{doctor.DOCESPEC || doctor.especialidad}</TableCell>
+                <TableCell>{doctor.DOCTELEF || doctor.telefono}</TableCell>
+                <TableCell>{doctor.DOCEMAIL || doctor.email}</TableCell>
+                <TableCell>
+                  {doctor.horarios && doctor.horarios.length > 0 ? (
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>
+                      {doctor.horarios.map((h, idx) => (
+                        <li key={h.HORIDHOR || idx}>
+                        {h.HORDIASE}: {h.HORHORIN} - {h.HORHORFI}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span>No asignado</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   <IconButton aria-label="edit" onClick={() => handleEdit(doctor)}>
                     <EditIcon />
@@ -140,7 +160,7 @@ export default function DoctorList() {
           <Typography variant="h6" component="h2" gutterBottom>
             {selectedDoctor ? 'Editar Doctor' : 'Agregar Nuevo Doctor'}
           </Typography>
-          <DoctorForm onClose={handleClose} doctor={selectedDoctor} />
+          <DoctorForm handleClose={handleClose} onDoctorCreated={handleDoctorCreatedOrUpdated} doctor={selectedDoctor} />
         </Box>
       </Modal>
     </Box>
