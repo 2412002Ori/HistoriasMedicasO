@@ -153,21 +153,21 @@ const PacientesTriajeList = () => {
               {Array.isArray(filteredPacientes) && filteredPacientes.length > 0 ? (
                 filteredPacientes.map((paciente, index) => (
                   <TableRow
-                    key={paciente.PACID || index}
+                    key={paciente.PACIDPAC || paciente.pacidpac || paciente.PACID || index}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
-                    <TableCell>{paciente.PACNOMBR || 'N/A'}</TableCell>
-                    <TableCell align="left">{paciente.PACAPELL || 'N/A'}</TableCell>
-                    <TableCell align="left">{paciente.PACCEDUL || 'N/A'}</TableCell>
+                    <TableCell>{paciente.PACNOMBR || paciente.pacnombr || 'N/A'}</TableCell>
+                    <TableCell align="left">{paciente.PACAPELL || paciente.pacapell || 'N/A'}</TableCell>
+                    <TableCell align="left">{paciente.PACCEDUL || paciente.paccedul || 'N/A'}</TableCell>
                     <TableCell align="left">
-                      {paciente.PACFENAC
-                        ? new Date(paciente.PACFENAC).toLocaleDateString()
+                      {paciente.PACFENAC || paciente.pacfenac
+                        ? new Date(paciente.PACFENAC || paciente.pacfenac).toLocaleDateString()
                         : 'N/A'}
                     </TableCell>
-                    <TableCell align="left">{paciente.PACSEXO_ || 'N/A'}</TableCell>
-                    <TableCell align="left">{paciente.PACDIREC || 'N/A'}</TableCell>
-                    <TableCell align="left">{paciente.PACTELEF || 'N/A'}</TableCell>
-                    <TableCell align="left">{paciente.PACEMAIL || 'N/A'}</TableCell>
+                    <TableCell align="left">{paciente.PACSEXO_ || paciente.pacsexo_ || 'N/A'}</TableCell>
+                    <TableCell align="left">{paciente.PACDIREC || paciente.pacdirec || 'N/A'}</TableCell>
+                    <TableCell align="left">{paciente.PACTELEF || paciente.pactelef || 'N/A'}</TableCell>
+                    <TableCell align="left">{paciente.PACEMAIL || paciente.pacemail || 'N/A'}</TableCell>
                     <TableCell align="center">
                       <IconButton aria-label="edit">
                         <EditIcon />

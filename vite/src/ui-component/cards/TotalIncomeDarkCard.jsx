@@ -45,7 +45,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
   }
 }));
 
-export default function TotalIncomeDarkCard({ isLoading }) {
+export default function TotalIncomeDarkCard({ isLoading, total }) {
   const theme = useTheme();
 
   return (
@@ -67,7 +67,7 @@ export default function TotalIncomeDarkCard({ isLoading }) {
                       color: '#fff'
                     }}
                   >
-                    <FolderSharedIcon fontSize="inherit" /> {/* Use FolderSharedIcon */}
+                    <FolderSharedIcon fontSize="inherit" />
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText
@@ -78,7 +78,7 @@ export default function TotalIncomeDarkCard({ isLoading }) {
                   }}
                   primary={
                     <Typography variant="h4" sx={{ color: '#fff' }}>
-                      102
+                      {total}
                     </Typography>
                   }
                   secondary={

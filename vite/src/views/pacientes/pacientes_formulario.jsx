@@ -53,6 +53,10 @@ const PacientesFormulario = ({ handleClose, onPatientCreated }) => {
   const [PACSEXO_Error, setPACSEXO_Error] = useState('');
   const [PACEMAILError, setPACEMAILError] = useState('');
 
+  // Nuevo: función para verificar si la cédula ya está en uso
+  const [cedulaEnUso, setCedulaEnUso] = useState(false);
+  const [verificandoCedula, setVerificandoCedula] = useState(false);
+
   // Estados para notificaciones
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -221,6 +225,23 @@ const PacientesFormulario = ({ handleClose, onPatientCreated }) => {
     }
   };
 
+  // Nuevo: función para verificar si la cédula ya está en uso
+  const verificarCedula = async (cedula) => {
+    if (!cedula || !/^\d+$/.test(cedula)) {
+      setCedulaEnUso(false);
+      return;
+    }
+    setVerificandoCedula(true);
+    try {
+      const res = await pacientesAPI.getByCedula(cedula);
+      setCedulaEnUso(!!res);
+    } catch {
+      setCedulaEnUso(false);
+    } finally {
+      setVerificandoCedula(false);
+    }
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} locale={es}>
       <Container sx={{ mt: 4, mb: 4 }}>
@@ -235,6 +256,35 @@ const PacientesFormulario = ({ handleClose, onPatientCreated }) => {
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <Grid container direction="column" spacing={3} alignItems="center">
+                    <Grid item sx={{ width: '100%' }}>
+                      <TextField
+                        fullWidth
+                        label="Cédula"
+                        value={PACCEDUL}
+                        onChange={(e) => {
+                          setPACCEDUL(e.target.value);
+                          verificarCedula(e.target.value);
+                        }}
+                        error={!!PACCEDULError || cedulaEnUso}
+                        helperText={
+                          PACCEDULError
+                            ? PACCEDULError
+                            : cedulaEnUso
+                            ? 'Esta cédula ya está registrada'
+                            : ''
+                        }
+                        required
+                        disabled={isLoading}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <AssignmentIndIcon />
+                            </InputAdornment>
+                          )
+                        }}
+                        sx={{ mb: 2 }}
+                      />
+                    </Grid>
                     <Grid item sx={{ width: '100%' }}>
                       <TextField
                         fullWidth
@@ -277,26 +327,6 @@ const PacientesFormulario = ({ handleClose, onPatientCreated }) => {
                     </Grid>
                     <Grid item sx={{ width: '100%' }}>
                       <TextField
-                        fullWidth
-                        label="Cédula"
-                        value={PACCEDUL}
-                        onChange={(e) => setPACCEDUL(e.target.value)}
-                        error={!!PACCEDULError}
-                        helperText={PACCEDULError}
-                        required
-                        disabled={isLoading}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <AssignmentIndIcon />
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{ mb: 2 }}
-                      />
-                    </Grid>
-                    <Grid item sx={{ width: '100%' }}>
-                      <TextField
                         select
                         fullWidth
                         label="Sexo"
@@ -329,8 +359,11 @@ const PacientesFormulario = ({ handleClose, onPatientCreated }) => {
                       >
                         <MenuItem value="">Seleccione un doctor</MenuItem>
                         {doctores.map((doctor) => (
-                          <MenuItem key={doctor.DOCIDDOC} value={doctor.DOCIDDOC}>
-                            {doctor.DOCNOMBR} {doctor.DOCAPELL}
+                          <MenuItem
+                            key={doctor.DOCIDDOC || doctor.dociddoc}
+                            value={doctor.DOCIDDOC || doctor.dociddoc}
+                          >
+                            {(doctor.DOCNOMBR || doctor.docnombr) + ' ' + (doctor.DOCAPELL || doctor.docapell)}
                           </MenuItem>
                         ))}
                       </TextField>

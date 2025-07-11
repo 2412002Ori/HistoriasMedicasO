@@ -24,13 +24,13 @@ import UserForm from './User_f';
 import { getUsuarios, createUsuario, updateUsuario, deleteUsuario } from '../../api/user';
 
 const mapFromBackend = (user) => ({
-  id: user.USEID___,
-  name: user.USEFNAME,
-  lastname: user.USELNAME,
-  email: user.USEEMAIL,
+  id: user.USEID___ || user.useid___,
+  name: user.USEFNAME || user.usefname,
+  lastname: user.USELNAME || user.uselname,
+  email: user.USEEMAIL || user.useemail,
   password: '', // nunca mostrar
-  role: user.rol___, // ahora usa rol___
-  status: user.USESTATU,
+  role: user.rol___,
+  status: user.USESTATU || user.usestatu,
 });
 
 const mapToBackend = (user) => ({

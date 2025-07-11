@@ -161,21 +161,17 @@ const HospitalizacionFormulario = ({ handleClose }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (validarFormulario()) {
-      // Aquí puedes enviar los datos del formulario a tu backend
+      // Adaptar los datos al formato del backend
       const hospitalizacion = {
-        paciente_cedula: pacienteCedula,
-        paciente_nombre: pacienteNombre,
-        fecha_ingreso: fechaIngreso,
-        fecha_egreso: fechaEgreso,
-        habitacion: habitacion,
-        cama: cama,
-        diagnostico: diagnostico,
-        motivo_ingreso: motivoIngreso,
-        estado: estado,
-        medico: medico,
-        observaciones: observaciones,
+        HOSIDEXP: pacienteCedula, // O el ID de expediente correspondiente
+        HOSFEING: fechaIngreso ? fechaIngreso.toISOString().split('T')[0] : '',
+        HOSFEEGR: fechaEgreso ? fechaEgreso.toISOString().split('T')[0] : '',
+        HOSHABIT: habitacion,
+        HOSMOTIV: motivoIngreso,
+        HOSOBSE_: observaciones,
       };
-      console.log('Datos de hospitalización:', hospitalizacion);
+      // Aquí deberías llamar a la API para guardar hospitalización
+      console.log('Datos de hospitalización (adaptados):', hospitalizacion);
       
       // Reiniciar el formulario
       setPacienteCedula('');

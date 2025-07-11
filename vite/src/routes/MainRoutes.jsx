@@ -3,6 +3,7 @@ import { lazy } from 'react';
 // project imports
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 // dashboard routing
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
@@ -35,11 +36,18 @@ import HospitalizacionFormulario from '../views/hospitalizacion/hospitalizacion_
 // sample page routing
 const SamplePage = Loadable(lazy(() => import('views/sample-page')));
 
+// profile routing
+import ProfilePage from '../views/profile/ProfilePage';
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
   path: '/',
-  element: <MainLayout />,
+  element: (
+    <ProtectedRoute>
+      <MainLayout />
+    </ProtectedRoute>
+  ),
   children: [
     {
       path: 'dashboard',
@@ -65,6 +73,10 @@ const MainRoutes = {
     {
       path: '/sample-page',
       element: <SamplePage />
+    },
+    {
+      path: '/profile',
+      element: <ProfilePage />
     },
     {
       path: '/pacientes_inscripcion',

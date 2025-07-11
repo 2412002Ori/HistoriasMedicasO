@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   TextField,
   Button,
@@ -28,8 +28,9 @@ import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 
 const QuimioFormulario = ({ handleClose }) => {
   // Estados para los campos del formulario
-  const [pacienteCedula, setPacienteCedula] = useState('');
-  const [pacienteNombre, setPacienteNombre] = useState('');
+  const [expedientes, setExpedientes] = useState([]);
+  const [expedienteId, setExpedienteId] = useState('');
+  const [expedienteError, setExpedienteError] = useState('');
   const [fechaInicio, setFechaInicio] = useState(null);
   const [fechaFin, setFechaFin] = useState(null);
   const [tipoQuimio, setTipoQuimio] = useState('');
@@ -91,27 +92,25 @@ const QuimioFormulario = ({ handleClose }) => {
     { value: 'cancelado', label: 'Cancelado' },
   ];
 
+  useEffect(() => {
+    fetch('/api/expedientes')
+      .then(res => res.json())
+      .then(data => setExpedientes(data.data || []))
+      .catch(() => setExpedientes([]));
+  }, []);
+
+  console.log('Expedientes cargados:', expedientes);
+
   // Función para validar el formulario
   const validarFormulario = () => {
     let isValid = true;
 
-    // Validar cédula del paciente
-    if (!pacienteCedula.trim()) {
-      setPacienteCedulaError('La cédula del paciente es obligatoria');
-      isValid = false;
-    } else if (!/^\d+$/.test(pacienteCedula)) {
-      setPacienteCedulaError('La cédula debe contener solo números');
+    // Validar expediente
+    if (!expedienteId) {
+      setExpedienteError('El expediente es obligatorio');
       isValid = false;
     } else {
-      setPacienteCedulaError('');
-    }
-
-    // Validar nombre del paciente
-    if (!pacienteNombre.trim()) {
-      setPacienteNombreError('El nombre del paciente es obligatorio');
-      isValid = false;
-    } else {
-      setPacienteNombreError('');
+      setExpedienteError('');
     }
 
     // Validar fecha de inicio
@@ -180,24 +179,19 @@ const QuimioFormulario = ({ handleClose }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (validarFormulario()) {
-      // Aquí puedes enviar los datos del formulario a tu backend
+      // Adaptar los datos al formato del backend
       const quimio = {
-        paciente_cedula: pacienteCedula,
-        paciente_nombre: pacienteNombre,
-        fecha_inicio: fechaInicio,
-        fecha_fin: fechaFin,
-        tipo_quimio: tipoQuimio,
-        dosis: dosis,
-        frecuencia: frecuencia,
-        estado: estado,
-        medico: medico,
-        observaciones: observaciones,
+        QUIIDEXP: expedienteId,
+        QUIFEAPL: fechaInicio ? fechaInicio.toISOString().split('T')[0] : '',
+        QUITIPOQ: tipoQuimio,
+        QUIDOSIS: dosis,
+        QUIOBSE_: observaciones,
       };
-      console.log('Datos de quimioterapia:', quimio);
+      // Aquí deberías llamar a la API para guardar quimioterapia
+      console.log('Datos de quimioterapia (adaptados):', quimio);
       
       // Reiniciar el formulario
-      setPacienteCedula('');
-      setPacienteNombre('');
+      setExpedienteId('');
       setFechaInicio(null);
       setFechaFin(null);
       setTipoQuimio('');
@@ -230,40 +224,23 @@ const QuimioFormulario = ({ handleClose }) => {
                 <Grid item xs={12} md={6}>
                   <Grid container direction="column" spacing={3}>
                     <Grid item>
-                      <TextField
-                        fullWidth
-                        label="Cédula del Paciente"
-                        value={pacienteCedula}
-                        onChange={(e) => setPacienteCedula(e.target.value)}
-                        error={!!pacienteCedulaError}
-                        helperText={pacienteCedulaError}
-                        required
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <PersonSearchIcon />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Grid>
-                    <Grid item>
-                      <TextField
-                        fullWidth
-                        label="Nombre del Paciente"
-                        value={pacienteNombre}
-                        onChange={(e) => setPacienteNombre(e.target.value)}
-                        error={!!pacienteNombreError}
-                        helperText={pacienteNombreError}
-                        required
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <PersonIcon />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
+                      <FormControl fullWidth required error={!!expedienteError}>
+                        <InputLabel id="expediente-label">Expediente</InputLabel>
+                        <Select
+                          labelId="expediente-label"
+                          id="expediente"
+                          value={expedienteId}
+                          label="Expediente"
+                          onChange={(e) => setExpedienteId(e.target.value)}
+                        >
+                          {expedientes.map((exp) => (
+                            <MenuItem key={exp.expidexp} value={String(exp.expidexp)}>
+                              {`N° ${exp.expidexp} - ${exp.pacnombr} ${exp.pacapell}`}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {expedienteError && <Typography color="error">{expedienteError}</Typography>}
+                      </FormControl>
                     </Grid>
                     <Grid item>
                       <DatePicker

@@ -90,7 +90,7 @@ export default function ConsultaForm({ onClose, onConsultaCreated }) {
     >
       <Typography variant="h6">Registrar Consulta</Typography>
 
-      <FormControl fullWidth>
+      <FormControl fullWidth required>
         <InputLabel>Expediente</InputLabel>
         <Select
           name="CONIDEXP"
@@ -99,14 +99,14 @@ export default function ConsultaForm({ onClose, onConsultaCreated }) {
           label="Expediente"
         >
           {expedientes.map((exp) => (
-            <MenuItem key={exp.EXPIDEXP || exp.id} value={exp.EXPIDEXP || exp.id}>
-              {exp.EXPNOMBR || exp.nombre || `Expediente ${exp.EXPIDEXP || exp.id}`}
+            <MenuItem key={exp.EXPIDEXP || exp.expidexp} value={exp.EXPIDEXP || exp.expidexp}>
+              {`N° ${exp.EXPIDEXP || exp.expidexp} - ${(exp.PACNOMBR || exp.pacnombr || '')} ${(exp.PACAPELL || exp.pacapell || '')}`}
             </MenuItem>
           ))}
         </Select>
       </FormControl>
 
-      <FormControl fullWidth>
+      <FormControl fullWidth required>
         <InputLabel>Doctor</InputLabel>
         <Select
           name="CONIDDOC"
@@ -115,8 +115,8 @@ export default function ConsultaForm({ onClose, onConsultaCreated }) {
           label="Doctor"
         >
           {doctores.map((doc) => (
-            <MenuItem key={doc.DOCIDDOC || doc.id} value={doc.DOCIDDOC || doc.id}>
-              {doc.DOCNOMBR || doc.nombre || `Doctor ${doc.DOCIDDOC || doc.id}`}
+            <MenuItem key={doc.DOCIDDOC || doc.dociddoc} value={doc.DOCIDDOC || doc.dociddoc}>
+              {`${doc.DOCNOMBR || doc.docnombr || ''} ${doc.DOCAPELL || doc.docapell || ''} - ${doc.DOCESPEC || doc.docespec || ''}`}
             </MenuItem>
           ))}
         </Select>

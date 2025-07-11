@@ -108,18 +108,18 @@ export default function DoctorList() {
           </TableHead>
           <TableBody>
             {filteredDoctors.map((doctor) => (
-              <TableRow key={doctor.DOCIDDOC || doctor.id || doctor.DOCID}>
-                <TableCell>{doctor.DOCNOMBR || doctor.nombre}</TableCell>
-                <TableCell>{doctor.DOCAPELL || doctor.apellido}</TableCell>
-                <TableCell>{doctor.DOCESPEC || doctor.especialidad}</TableCell>
-                <TableCell>{doctor.DOCTELEF || doctor.telefono}</TableCell>
-                <TableCell>{doctor.DOCEMAIL || doctor.email}</TableCell>
+              <TableRow key={doctor.DOCIDDOC || doctor.dociddoc || doctor.id || doctor.DOCID}>
+                <TableCell>{doctor.DOCNOMBR || doctor.docnombr || doctor.nombre}</TableCell>
+                <TableCell>{doctor.DOCAPELL || doctor.docapell || doctor.apellido}</TableCell>
+                <TableCell>{doctor.DOCESPEC || doctor.docespec || doctor.especialidad}</TableCell>
+                <TableCell>{doctor.DOCTELEF || doctor.doctelef || doctor.telefono}</TableCell>
+                <TableCell>{doctor.DOCEMAIL || doctor.docemail || doctor.email}</TableCell>
                 <TableCell>
                   {doctor.horarios && doctor.horarios.length > 0 ? (
                     <ul style={{ margin: 0, paddingLeft: 16 }}>
                       {doctor.horarios.map((h, idx) => (
-                        <li key={h.HORIDHOR || idx}>
-                        {h.HORDIASE}: {h.HORHORIN} - {h.HORHORFI}
+                        <li key={h.HORIDHOR || h.horidhor || idx}>
+                          {h.HORDIASE || h.hordiase}: {h.HORHORIN || h.horhorin} - {h.HORHORFI || h.horhorfi}
                         </li>
                       ))}
                     </ul>

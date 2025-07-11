@@ -20,7 +20,7 @@ import { gridSpacing } from 'store/constant';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 
 
-export default function PopularCard({ isLoading }) {
+export default function PopularCard({ isLoading, pacientesPorAnio = [], pacientesUltimoAnio = 0, height = 200, fontSizeTitle = 14, fontSizeValue = 22 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const handleClick = (event) => {
@@ -42,37 +42,15 @@ export default function PopularCard({ isLoading }) {
               <Grid size={12}>
                 <Grid container sx={{ alignContent: 'center', justifyContent: 'space-between' }}>
                   <Grid>
-                    <Typography variant="h4">Pacientes Agregados</Typography>
+                    <Typography variant="h4" sx={{ fontSize: fontSizeTitle }}>Pacientes Agregados</Typography>
                   </Grid>
                   <Grid>
-                    <IconButton size="small" sx={{ mt: -0.625 }}>
-                      <MoreHorizOutlinedIcon
-                        fontSize="small"
-                        sx={{ cursor: 'pointer' }}
-                        aria-controls="menu-popular-card"
-                        aria-haspopup="true"
-                        onClick={handleClick}
-                      />
-                    </IconButton>
-                    <Menu
-                      id="menu-popular-card"
-                      anchorEl={anchorEl}
-                      keepMounted
-                      open={Boolean(anchorEl)}
-                      onClose={handleClose}
-                      variant="selectedMenu"
-                      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    >
-                      <MenuItem onClick={handleClose}> Today</MenuItem>
-                      <MenuItem onClick={handleClose}> This Month</MenuItem>
-                      <MenuItem onClick={handleClose}> This Year </MenuItem>
-                    </Menu>
+                    <Typography variant="h4" sx={{ fontSize: fontSizeValue }}>{pacientesUltimoAnio}</Typography>
                   </Grid>
                 </Grid>
               </Grid>
               <Grid size={12} sx={{ mt: -1 }}>
-                <BajajAreaChartCard />
+                <BajajAreaChartCard pacientesPorAnio={pacientesPorAnio} height={height} />
               </Grid>
             </Grid>
           </CardContent>

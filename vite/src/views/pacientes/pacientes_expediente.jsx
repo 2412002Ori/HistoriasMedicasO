@@ -92,8 +92,8 @@ const TableExpedienteForm = ({ handleClose }) => {
                       onChange={(e) => setIdPaciente(e.target.value)}
                     >
                       {pacientes.map((paciente) => (
-                        <MenuItem key={paciente.PACIDPAC} value={paciente.PACIDPAC}>
-                          {paciente.PACNOMBR} {paciente.PACAPELL}
+                        <MenuItem key={paciente.PACIDPAC || paciente.pacidpac} value={paciente.PACIDPAC || paciente.pacidpac}>
+                          {(paciente.PACNOMBR || paciente.pacnombr) + ' ' + (paciente.PACAPELL || paciente.pacapell)}
                         </MenuItem>
                       ))}
                     </Select>
@@ -120,8 +120,8 @@ const TableExpedienteForm = ({ handleClose }) => {
                       onChange={(e) => setDoctorTratante(e.target.value)}
                     >
                       {doctores.map((doctor) => (
-                        <MenuItem key={doctor.DOCIDDOC} value={doctor.DOCIDDOC}>
-                          {doctor.DOCNOMBR} {doctor.DOCAPELL}
+                        <MenuItem key={doctor.DOCIDDOC || doctor.dociddoc} value={doctor.DOCIDDOC || doctor.dociddoc}>
+                          {(doctor.DOCNOMBR || doctor.docnombr) + ' ' + (doctor.DOCAPELL || doctor.docapell)}
                         </MenuItem>
                       ))}
                     </Select>

@@ -1,53 +1,164 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003/api/usuarios';
+import { API_BASE_URL } from '../config';
 
-export async function getUsuarios() {
-  const res = await fetch(API_URL);
-  if (!res.ok) throw new Error('Error al obtener usuarios');
-  return res.json();
-}
+// Get all users
+export const getUsuarios = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/usuarios`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-export async function getUsuarioById(id) {
-  const res = await fetch(`${API_URL}/${id}`);
-  if (!res.ok) throw new Error('Error al obtener usuario');
-  return res.json();
-}
+    const data = await response.json();
 
-export async function createUsuario(usuario) {
-  const usuarioBackend = {
-    ...usuario,
-    rol___: usuario.role,
-  };
-  delete usuarioBackend.role;
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(usuarioBackend)
-  });
-  const data = await res.json();
-  console.log('Respuesta backend:', data);
-  if (!res.ok) throw new Error(data.message || 'Error al crear usuario');
-  return data;
-}
+    if (!response.ok) {
+      throw new Error(data.message || 'Error al obtener usuarios');
+    }
 
-export async function updateUsuario(id, usuario) {
-  const usuarioBackend = {
-    ...usuario,
-    rol___: usuario.role,
-  };
-  delete usuarioBackend.role;
-  const res = await fetch(`${API_URL}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(usuarioBackend)
-  });
-  if (!res.ok) throw new Error('Error al actualizar usuario');
-  return res.json();
-}
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
 
-export async function deleteUsuario(id) {
-  const res = await fetch(`${API_URL}/${id}`, {
-    method: 'DELETE'
-  });
-  if (!res.ok) throw new Error('Error al eliminar usuario');
-  return res.json();
-} 
+// Create new user
+export const createUsuario = async (userData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/usuarios`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Error al crear usuario');
+    }
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Update user
+export const updateUsuario = async (userId, userData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/usuarios/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Error al actualizar usuario');
+    }
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Delete user
+export const deleteUsuario = async (userId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/usuarios/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Error al eliminar usuario');
+    }
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Get current user profile
+export const getCurrentUser = async (token) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/usuarios/me`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Error al obtener el perfil');
+    }
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Update user profile
+export const updateUserProfile = async (token, userData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/usuarios/profile`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Error al actualizar el perfil');
+    }
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Upload profile image
+export const uploadProfileImage = async (token, imageFile) => {
+  try {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    const response = await fetch(`${API_BASE_URL}/usuarios/profile-image`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Error al subir la imagen');
+    }
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}; 

@@ -10,11 +10,13 @@ import Typography from '@mui/material/Typography';
 
 // third party
 import Chart from 'react-apexcharts';
+import axios from 'axios';
 
 // project imports
 import SkeletonTotalGrowthBarChart from 'ui-component/cards/Skeleton/TotalGrowthBarChart';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
+import { API_BASE_URL } from '../../../config';
 
 // chart data
 import barChartOptions from './chart-data/total-growth-bar-chart';
@@ -32,45 +34,74 @@ const series = [
   { name: 'Maintenance', data: [0, 0, 75, 0, 0, 115, 0, 0, 0, 0, 150, 0] }
 ];
 
-export default function TotalGrowthBarChart({ isLoading }) {
+export default function TotalGrowthBarChart({ isLoading, consultas = [], total = 0, height = 200 }) {
   const theme = useTheme();
 
-  const [value, setValue] = useState('today');
+  const [value, setValue] = useState('anual');
   const [chartOptions, setChartOptions] = useState(barChartOptions);
-
-  const { primary } = theme.palette.text;
-  const divider = theme.palette.divider;
-  const grey500 = theme.palette.grey[500];
-
-  const primary200 = theme.palette.primary[200];
-  const primaryDark = theme.palette.primary.dark;
-  const secondaryMain = theme.palette.secondary.main;
-  const secondaryLight = theme.palette.secondary.light;
+  const [seriesData, setSeriesData] = useState([]);
+  const [localConsultas, setLocalConsultas] = useState(consultas);
+  const [localTotal, setLocalTotal] = useState(total);
+  const [loading, setLoading] = useState(isLoading);
 
   useEffect(() => {
-    setChartOptions((prev) => ({
-      ...prev,
-      colors: [primary200, primaryDark, secondaryMain, secondaryLight],
-      xaxis: {
-        ...prev.xaxis,
-        labels: { style: { colors: primary } }
-      },
-      yaxis: {
-        labels: { style: { colors: primary } }
-      },
-      grid: { ...prev.grid, borderColor: divider },
-      tooltip: { theme: 'light' },
-      legend: {
-        ...prev.legend,
-        labels: { ...prev.legend?.labels, colors: grey500 }
-      }
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme.palette]);
+    setLocalConsultas(consultas);
+    setLocalTotal(total);
+    setLoading(isLoading);
+  }, [consultas, total, isLoading]);
+
+  useEffect(() => {
+    // Mapear los datos de consultas a la serie de la gráfica
+    if (localConsultas.length > 0) {
+      setSeriesData([
+        {
+          name: 'Consultas',
+          data: localConsultas.map((c) => Number(c.cantidad))
+        }
+      ]);
+      setChartOptions((prev) => ({
+        ...prev,
+        xaxis: {
+          ...prev.xaxis,
+          categories: localConsultas.map((c) => c.periodo)
+        }
+      }));
+    } else {
+      // Fallback: datos estáticos si no hay datos dinámicos
+      setSeriesData([
+        {
+          name: 'Consultas',
+          data: [10, 20, 15]
+        }
+      ]);
+      setChartOptions((prev) => ({
+        ...prev,
+        xaxis: {
+          ...prev.xaxis,
+          categories: ['2023', '2024', '2025']
+        }
+      }));
+    }
+  }, [localConsultas]);
+
+  const handleChange = async (e) => {
+    const periodo = e.target.value;
+    setValue(periodo);
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE_URL}/consultas/por-periodo?periodo=${periodo}`);
+      setLocalConsultas(res.data.data || []);
+      setLocalTotal(res.data.data?.reduce((acc, cur) => acc + Number(cur.cantidad), 0) || 0);
+    } catch (err) {
+      setLocalConsultas([]);
+      setLocalTotal(0);
+    }
+    setLoading(false);
+  };
 
   return (
     <>
-      {isLoading ? (
+      {loading ? (
         <SkeletonTotalGrowthBarChart />
       ) : (
         <MainCard>
@@ -83,43 +114,21 @@ export default function TotalGrowthBarChart({ isLoading }) {
                       <Typography variant="subtitle2">REGISTRO DE CONSULTAS </Typography>
                     </Grid>
                     <Grid>
-                      <Typography variant="h3">1050</Typography>
+                      <Typography variant="h3">{localTotal}</Typography>
                     </Grid>
                   </Grid>
                 </Grid>
                 <Grid>
-                  <TextField id="standard-select-currency" select value={value} onChange={(e) => setValue(e.target.value)}>
-                    {status.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
+                  <TextField id="standard-select-currency" select value={value} onChange={handleChange}>
+                    <MenuItem value="diario">Diario</MenuItem>
+                    <MenuItem value="mensual">Mes</MenuItem>
+                    <MenuItem value="anual">Año</MenuItem>
                   </TextField>
                 </Grid>
               </Grid>
             </Grid>
-            <Grid
-              size={12}
-              sx={{
-                ...theme.applyStyles('light', {
-                  '& .apexcharts-series:nth-of-type(4) path:hover': {
-                    filter: `brightness(0.95)`,
-                    transition: 'all 0.3s ease'
-                  }
-                }),
-                '& .apexcharts-menu': {
-                  bgcolor: 'background.paper'
-                },
-                '.apexcharts-theme-light .apexcharts-menu-item:hover': {
-                  bgcolor: 'grey.200'
-                },
-                '& .apexcharts-theme-light .apexcharts-menu-icon:hover svg, .apexcharts-theme-light .apexcharts-reset-icon:hover svg, .apexcharts-theme-light .apexcharts-selection-icon:not(.apexcharts-selected):hover svg, .apexcharts-theme-light .apexcharts-zoom-icon:not(.apexcharts-selected):hover svg, .apexcharts-theme-light .apexcharts-zoomin-icon:hover svg, .apexcharts-theme-light .apexcharts-zoomout-icon:hover svg':
-                  {
-                    fill: theme.palette.grey[400]
-                  }
-              }}
-            >
-              <Chart options={chartOptions} series={series} type="bar" height={480} />
+            <Grid size={12} sx={{ ...theme.applyStyles('light', { '& .apexcharts-series:nth-of-type(4) path:hover': { filter: `brightness(0.95)`, transition: 'all 0.3s ease' } }), '& .apexcharts-menu': { bgcolor: 'background.paper' }, '.apexcharts-theme-light .apexcharts-menu-item:hover': { bgcolor: 'grey.200' }, '& .apexcharts-theme-light .apexcharts-menu-icon:hover svg, .apexcharts-theme-light .apexcharts-reset-icon:hover svg, .apexcharts-theme-light .apexcharts-selection-icon:not(.apexcharts-selected):hover svg, .apexcharts-theme-light .apexcharts-zoom-icon:not(.apexcharts-selected):hover svg, .apexcharts-theme-light .apexcharts-zoomin-icon:hover svg, .apexcharts-theme-light .apexcharts-zoomout-icon:hover svg': { fill: theme.palette.grey[400] } }}>
+              <Chart options={chartOptions} series={seriesData} type="bar" height={height} width={"100%"} />
             </Grid>
           </Grid>
         </MainCard>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -26,6 +27,7 @@ import Box from '@mui/material/Box';
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
 import useConfig from 'hooks/useConfig';
+import { useAuth } from 'contexts/AuthContext';
 
 // assets
 import User1 from 'assets/images/users/user-round.svg';
@@ -36,6 +38,8 @@ import { IconLogout, IconSearch, IconSettings, IconUser } from '@tabler/icons-re
 export default function ProfileSection() {
   const theme = useTheme();
   const { borderRadius } = useConfig();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [sdm, setSdm] = useState(true);
   const [value, setValue] = useState('');
   const [notification, setNotification] = useState(false);
@@ -56,6 +60,12 @@ export default function ProfileSection() {
       return;
     }
 
+    setOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
     setOpen(false);
   };
 
@@ -130,10 +140,10 @@ export default function ProfileSection() {
                         <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
                           <Typography variant="h4">PERFIL </Typography>
                           <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                            Johne Doe
+                            {user ? `${user.nombre} ${user.apellido}` : 'Usuario'}
                           </Typography>
                         </Stack>
-                        <Typography variant="subtitle2"> Administrado</Typography>
+                        <Typography variant="subtitle2"> {user?.rol || 'Administrador'}</Typography>
                       </Stack>
                     </Box>
                     <Box
@@ -156,17 +166,28 @@ export default function ProfileSection() {
                           '& .MuiListItemButton-root': { mt: 0.5 }
                         }}
                       >
-                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }} selected={selectedIndex === 0}>
+                        <ListItemButton 
+                          sx={{ borderRadius: `${borderRadius}px` }} 
+                          selected={selectedIndex === 0}
+                          onClick={() => {
+                            navigate('/profile');
+                            setOpen(false);
+                          }}
+                        >
                           <ListItemIcon>
                             <IconSettings stroke={1.5} size="20px" />
                           </ListItemIcon>
                           <ListItemText primary={<Typography variant="body2">Ajustes Perfil</Typography>} />
                         </ListItemButton>
-                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }} selected={selectedIndex === 4}>
+                        <ListItemButton 
+                          sx={{ borderRadius: `${borderRadius}px` }} 
+                          selected={selectedIndex === 4}
+                          onClick={handleLogout}
+                        >
                           <ListItemIcon>
                             <IconLogout stroke={1.5} size="20px" />
                           </ListItemIcon>
-                          <ListItemText primary={<Typography variant="body2">cerrar sesión</Typography>} />
+                          <ListItemText primary={<Typography variant="body2">Cerrar sesión</Typography>} />
                         </ListItemButton>
                       </List>
                     </Box>

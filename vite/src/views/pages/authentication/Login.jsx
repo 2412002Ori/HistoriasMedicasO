@@ -36,7 +36,7 @@ export default function Login() {
             <Grid sx={{ m: { xs: 1, sm: 3 }, mb: 0 }}>
               <AuthCardWrapper >
                 <Grid container spacing={2} sx={{ alignItems: 'center', justifyContent: 'center' }}>
-                  <Grid sx={{ mb: 3 }} size={12} sx={{ textAlign: 'center' }}>
+                  <Grid sx={{ mb: 3, textAlign: 'center' }} size={12}>
                     <Link to="#" aria-label="logo">
                       <img src={Logo} alt="Logo" width="200" height="150" />
                     </Link>
